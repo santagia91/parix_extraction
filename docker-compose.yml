@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  oracle:
+    image: gvenzl/oracle-free:latest
+    environment:
+      ORACLE_PASSWORD: oracle
+      ORACLE_PDB: FREEPDB1
+      ORACLE_CHARACTERSET: AL32UTF8
+      ORACLE_MEMORY: 4G
+      ORACLE_DISABLE_ASYNCH_IO: true
+    ports:
+      - "1521:1521"
+    volumes:
+      - ./oracle_restore:/oracle_restore
+      - ./data:/app/data
+      - ./output:/app/output
+    deploy:
+      resources:
+        limits:
+          memory: 4g  # Mantieni Oracle a 4 GB di RAM
+          cpus: "2.0"
+
+  python-script:
+    build:
+      context: .
+    depends_on:
+      - oracle
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+    environment:
+      ORACLE_USER: system
+      ORACLE_PASSWORD: oracle
+      ORACLE_HOST: oracle
+      ORACLE_PORT: 1521
+      ORACLE_SERVICE: FREEPDB1
+    deploy:
+      resources:
+        limits:
+          memory: 20g  # Aumenta Python a 20 GB di RAM
+          cpus: "2.0"
+
+volumes:
+  oracle_data:
